@@ -15,9 +15,6 @@
     "url": "https://github.com/LukeLavan/u21-intvis-project/issues"
   },
   "homepage": "https://github.com/LukeLavan/u21-intvis-project#readme",
-  "dependencies": {
-    "teoria": "^2.5.0"
-  },
   "devDependencies": {
     "gulp": "^4.0.2",
     "gulp-sass": "^5.0.0",
