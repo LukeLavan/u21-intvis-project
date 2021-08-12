@@ -6,7 +6,7 @@ fill this section with relevant information as needed
 
 https://lukelavan.github.io/u21-intvis-project/
 
-## installation
+## development
 
-In the root directory:
-```npm install```
+* In the root directory: ```npm install```
+* Use Gulp to automatically transpile .scss: ```gulp```
