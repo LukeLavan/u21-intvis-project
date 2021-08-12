@@ -10,7 +10,7 @@ const color_string = 'black';
 const width_fret = 8;
 const color_fret = 'black';
 
-const tuning = ["G", "D#", "A#", "F"];
+const tuning = ['G', 'D', 'A', 'E'];
 
 const dots = [
     {
@@ -110,7 +110,7 @@ class BassNeck {
             this.parent.append('text')
                 .attr('y',i)
                 .attr('x',0)
-                .text(tuning[j]);
+                .text(this.tuning[j]);
             this.parent.append('line')
                 .attr('y1',i).attr('y2',i)
                 .attr('x1',xmin)
@@ -173,7 +173,37 @@ class BassNeck {
         this.enableChord(scale); // same logic, different name
     }
 
-    clearNotes(){
+    // @param tuning: string[]
+    setTuning(tuning){
+        // save currently activated notes
+        let prev_notes = [];
+        for(let i=0;i<this.bools.length;++i)
+            for(let j=0;j<this.bools[i].length;++j)
+                if(this.bools[i][j])
+                    prev_notes.push(this.notes[i][j]);
+        this.clearBools(); // de-activate all notes
+
+        // build tuning and this.notes from arg
+        this.tuning = tuning;
+        this.notes = []; // clears old this.notes
+        this.parsedTuning = tuning.map(Tonal.Note.get);
+        for(let i=0; i<num_strings; ++i){
+            const open_string = this.parsedTuning[i];
+            const open_string_name = Tonal.Note.simplify(open_string.name);
+            const chrom_scale = Tonal.Scale.get(open_string_name+' chromatic');
+            let note_arr = [];
+            for(let j=0; j<num_frets; ++j){
+                note_arr.push(Tonal.Note.get(chrom_scale.notes[(j+1)%num_frets]));
+            }
+            this.notes.push(note_arr);
+        }
+
+        // re-activate previous notes
+        prev_notes.map(this.enableNote, this);
+
+    }
+
+    clearBools(){
         for(let i=0;i<this.bools.length; ++i){
             for(let j=0; j<this.bools[i].length; ++j){
                 this.bools[i][j] = false;
@@ -191,33 +221,42 @@ if(svg.empty()){
 }
 let bass = new BassNeck(svg);
 function testScale() {
-    bass.clearNotes();
+    bass.clearBools();
     const scale = Tonal.Scale.get('c5 pentatonic');
-    console.log("Enabling all notes in a "+scale.name+" scale");
+    console.log('Enabling all notes in a '+scale.name+' scale');
     bass.enableScale(scale);
     bass.draw();
 }
 function testChord() {
-    bass.clearNotes();
+    bass.clearBools();
     const chord = Tonal.Chord.get('cmaj7');
     console.log('Enabling all notes in a '+chord.name+' chord');
     bass.enableChord(chord);
     bass.draw();
 }
 function testNote(){
-    bass.clearNotes();
+    bass.clearBools();
     const note = Tonal.Note.get('C3');
     console.log('Enabling all notes that are '+note.name+' notes');
     bass.enableNote(note);
+    bass.draw();
+}
+const testTunings = [tuning, ['B','E','A','D']];
+const testTuningsNames = ['Standard', 'BEAD'];
+function testTuning(){
+    const tuningName = d3.select('select').property('value');
+    const tuning = testTunings[testTuningsNames.findIndex(d=>d===tuningName)];
+    console.log('Changing tuning to '+tuningName+' ('+tuning+')');
+    bass.setTuning(tuning);
     bass.draw();
 }
 
 // initial draw of empty fretboard
 bass.draw();
 
-const buttons = d3.select("#buttons");
+const buttons = d3.select('#buttons');
 const testScaleButton = buttons.append('button')
-    .text("Scale")
+    .text('Scale')
     .on('click',testScale);
 const testChordButton = buttons.append('button')
     .text('Chord')
@@ -225,3 +264,10 @@ const testChordButton = buttons.append('button')
 const testNoteButton = buttons.append('button')
     .text('Note')
     .on('click',testNote);
+const testTuningButton = buttons.append('select')
+    .attr('class','select')
+    .on('change',testTuning);
+testTuningButton.selectAll('option')
+    .data(testTuningsNames).enter()
+    .append('option')
+        .text(d=>d);
