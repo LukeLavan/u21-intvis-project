@@ -163,6 +163,7 @@ class BassNeck {
                 });
                 g.on('click',()=>{
                     this.bools[i][j]=!this.bools[i][j];
+                    if(this.bools[i][j])this.notes[i][j].color=color_notes;
                     this.draw();
                 });
                 if(this.bools[i][j]){
