@@ -214,15 +214,16 @@ class BassNeck {
     }
 
     // @param chord: Tonal.Chord
+    // @param octave: number
     // @param color: string
-    enableChord(chord, color){
-        chord.notes.map(d=>this.enableNote(Tonal.Note.get(d+'1'),color)); // arbitrary octave
+    enableChord(chord, octave, color){
+        chord.notes.map(d=>this.enableNote(Tonal.Note.get(''+d+octave),color));
     }
 
     // @param scale: Tonal.Scale
     // @param color: string
     enableScale(scale, color){
-        this.enableChord(scale,color); // same logic, different name
+        this.enableChord(scale,'',color); // same logic, different name
     }
 
     // @param tuning: string[]
@@ -278,7 +279,7 @@ bass.draw();
 // functions for testing
 function testScale() {
     bass.clearBools();
-    const scale = Tonal.Scale.get('c5 pentatonic');
+    const scale = Tonal.Scale.get('c2 pentatonic');
     console.log('Enabling all notes in a '+scale.name+' scale');
     bass.enableScale(scale,'red');
     bass.draw();
@@ -287,8 +288,9 @@ function testScale() {
 function testChord() {
     bass.clearBools();
     const chord = Tonal.Chord.get('cmaj7');
-    console.log('Enabling all notes in a '+chord.name+' chord');
-    bass.enableChord(chord,'blue');
+    console.log('Enabling all notes in a'+chord.symbol+' chord at octave 2');
+    console.log(chord);
+    bass.enableChord(chord,2,'blue');
     bass.draw();
 }
 
