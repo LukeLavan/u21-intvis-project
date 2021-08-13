@@ -140,7 +140,7 @@ class BassNeck {
                     this.parent.append('circle')
                         .attr('cx',x).attr('cy', y)
                         .attr('r',radius_notes)
-                        .style('fill',color_notes);
+                        .style('fill',note.color?note.color:color_notes);
                     this.parent.append('text')
                         .attr('x',x-radius_notes/4).attr('y',y+4)
                         .style('fill',color_notes_name)
@@ -151,36 +151,41 @@ class BassNeck {
     }
 
     // @param note: Tonal.Note
-    enableNote(note){
+    // @param color: string
+    enableNote(note, color){
         const arg_name = note.chroma;
         console.log('trying to find '+arg_name);
         for(let i=0; i<this.notes.length; ++i){
             for(let j=0; j<this.notes[i].length; ++j){
                 if(arg_name === this.notes[i][j].chroma){
                     this.bools[i][j] = true;
+                    if(color)
+                        this.notes[i][j].color=color;
                 }
             }
         }
     }
 
     // @param chord: Tonal.Chord
-    enableChord(chord){
-        chord.notes.map(d=>this.enableNote(Tonal.Note.get(d+'1'))); // arbitrary octave
+    // @param color: string
+    enableChord(chord, color){
+        chord.notes.map(d=>this.enableNote(Tonal.Note.get(d+'1'),color)); // arbitrary octave
     }
 
     // @param scale: Tonal.Scale
-    enableScale(scale){
-        this.enableChord(scale); // same logic, different name
+    // @param color: string
+    enableScale(scale, color){
+        this.enableChord(scale,color); // same logic, different name
     }
 
     // @param tuning: string[]
     setTuning(tuning){
-        // save currently activated notes
+        // save currently activated notes and their color
         let prev_notes = [];
         for(let i=0;i<this.bools.length;++i)
             for(let j=0;j<this.bools[i].length;++j)
                 if(this.bools[i][j])
-                    prev_notes.push(this.notes[i][j]);
+                    prev_notes.push([this.notes[i][j],this.notes[i][j].color]);
         this.clearBools(); // de-activate all notes
 
         // build tuning and this.notes from arg
@@ -199,7 +204,7 @@ class BassNeck {
         }
 
         // re-activate previous notes
-        prev_notes.map(this.enableNote, this);
+        prev_notes.map(d=>this.enableNote(d[0],d[1]), this);
 
     }
 
@@ -224,21 +229,21 @@ function testScale() {
     bass.clearBools();
     const scale = Tonal.Scale.get('c5 pentatonic');
     console.log('Enabling all notes in a '+scale.name+' scale');
-    bass.enableScale(scale);
+    bass.enableScale(scale,'red');
     bass.draw();
 }
 function testChord() {
     bass.clearBools();
     const chord = Tonal.Chord.get('cmaj7');
     console.log('Enabling all notes in a '+chord.name+' chord');
-    bass.enableChord(chord);
+    bass.enableChord(chord,'blue');
     bass.draw();
 }
 function testNote(){
     bass.clearBools();
     const note = Tonal.Note.get('C3');
     console.log('Enabling all notes that are '+note.name+' notes');
-    bass.enableNote(note);
+    bass.enableNote(note,'green');
     bass.draw();
 }
 const testTunings = [tuning, ['B','E','A','D']];
