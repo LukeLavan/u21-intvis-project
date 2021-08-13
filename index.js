@@ -105,10 +105,23 @@ class BassNeck {
 
     drawStrings(xmin,xmax,xdel,ymin,ymax,ydel){
         for(let i=ymin, j=0;i<=ymax;i+=ydel, ++j){
+            // TODO: if this note should be enabled, draw a circle behind the label
+            this.parent.append('circle')
+                .attr('id','openstring'+j)
+                .attr('cy',i-radius_notes/2+8)
+                .attr('cx',8)
+                .attr('r',radius_notes)
+                .attr('stroke',color_notes)
+                .attr('fill','none')
+                .style('opacity',0);
+
+            // the string label
             this.parent.append('text')
                 .attr('y',i)
                 .attr('x',0)
                 .text(this.tuning[j]);
+            
+            // the string itself
             this.parent.append('line')
                 .attr('y1',i).attr('y2',i)
                 .attr('x1',xmin)
@@ -137,6 +150,10 @@ class BassNeck {
                 const note = this.notes[i][j];
                 const name = Tonal.Note.simplify(note.name);
                 const g = this.parent.append('g').attr('class','note').data([note]);
+
+                // TODO: open string indicator
+                if(this.bools[i][j]&&name===this.parsedTuning[i].name)
+                    d3.select('#openstring'+i).style('opacity',1);
 
                 // the circle on the fretboard
                 g.append('circle')
