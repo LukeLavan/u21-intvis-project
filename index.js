@@ -1,6 +1,6 @@
 // config
 const num_strings = 4;
-const num_frets = 12;
+let num_frets = 12;
 
 const svg_width = 1024;
 const svg_height = Math.max(svg_width / num_strings, 300);
@@ -75,7 +75,7 @@ class BassNeck {
             let note_arr = [];
             for(let j=0; j<num_frets; ++j){
                 bool_arr.push(false);
-                note_arr.push(Tonal.Note.get(chrom_scale.notes[(j+1)%num_frets]));
+                note_arr.push(Tonal.Note.get(chrom_scale.notes[(j+1)%12]));
             }
             this.bools.push(bool_arr);
             this.notes.push(note_arr);
@@ -306,7 +306,7 @@ function testNote(){
 const testTunings = [tuning, ['D2','A1','E1','B0']];
 const testTuningsNames = ['Standard', 'BEAD'];
 function testTuning(){
-    const tuningName = d3.select('select').property('value');
+    const tuningName = d3.select('#select_tuning').property('value');
     const tuning = testTunings[testTuningsNames.findIndex(d=>d===tuningName)];
     console.log('Changing tuning to '+tuningName+' ('+tuning+')');
     bass.setTuning(tuning);
@@ -315,6 +315,15 @@ function testTuning(){
 
 function testClear(){
     bass.clearBools();
+    bass.draw();
+}
+
+const testFretNumOptions = [12,6];
+function testFretNum(){
+    const n = d3.select('#select_fretnum').property('value');
+    d3.selectAll('#fretboard > *').remove();
+    num_frets = n;
+    bass = new BassNeck(svg);
     bass.draw();
 }
 
@@ -334,7 +343,7 @@ const testNoteButton = buttons.append('button')
     .on('click',testNote);
 
 const testTuningButton = buttons.append('select')
-    .attr('class','select')
+    .attr('id','select_tuning')
     .on('change',testTuning);
 
 testTuningButton.selectAll('option')
@@ -345,3 +354,10 @@ testTuningButton.selectAll('option')
 const testClearButton = buttons.append('button')
     .text('Clear')
     .on('click',testClear);
+
+const testFretNumButton = buttons.append('select')
+    .attr('id','select_fretnum')
+    .on('change',testFretNum);
+testFretNumButton.selectAll('option')
+    .data(testFretNumOptions).enter()
+    .append('option').text(d=>d);
