@@ -64,22 +64,11 @@ class BassNeck {
 
         this.num_strings = num_strings;
         this.num_frets= num_frets;
+        
+        this.active_notes = new Map();
 
-        this.bools = [];
-        this.notes = [];
-        for(let i=0; i<num_strings; ++i){
-            const open_string = this.parsedTuning[i];
-            const open_string_name = Tonal.Note.simplify(open_string.name);
-            const chrom_scale = Tonal.Scale.get(open_string_name+' chromatic');
-            let bool_arr = [];
-            let note_arr = [];
-            for(let j=0; j<num_frets; ++j){
-                bool_arr.push(false);
-                note_arr.push(Tonal.Note.get(chrom_scale.notes[(j+1)%12]));
-            }
-            this.bools.push(bool_arr);
-            this.notes.push(note_arr);
-        }
+        // populate the note_board using the default tuning
+        this.populate_note_board(tuning);
 
         this.dots = dots;
 
@@ -90,6 +79,27 @@ class BassNeck {
             .style('background','#000')
             .style('color','#FFF')
             .text('note: <>');
+    }
+
+    populate_note_board(tuning=tuning){
+        // the specified tuning must have the right number of open strings
+        if(tuning.length!==this.num_strings){
+            console.log("ERROR: invalid tuning specified (expected length "+this.num_strings+", got "+tuning.length+")");
+            return;
+        }
+        // empty the current note_board
+        this.note_board = [];
+        // populate the note_board using the specified tuning
+        for(let i=0; i<this.num_strings; ++i){
+            const open_string = tuning[i];
+            const open_string_name = Tonal.Note.simplify(open_string);
+            const chrom_scale = Tonal.Scale.get(open_string_name+' chromatic');
+            let note_arr = [];
+            for(let j=0; j<=this.num_frets; ++j){
+                note_arr.push(Tonal.Note.get(chrom_scale.notes[j%12])); // loop thru 12 notes in chromatic scale
+            }
+            this.note_board.push(note_arr);
+        }
     }
 
     drawFrets(xmin,xmax,xdel,ymin,ymax,ydel){
@@ -143,32 +153,37 @@ class BassNeck {
     }
 
     drawNotes(xmin,xmax,xdel,ymin,ymax,ydel){
-        for(let i=0;i<this.bools.length;++i){
-            for(let j=0; j<this.bools[i].length;++j){
-                const y = this.margin.top + i*ydel;
-                const x = this.margin.left + (j+0.5)*xdel;
-                const note = this.notes[i][j];
-                const name = Tonal.Note.simplify(note.name);
-                const g = this.parent.append('g').attr('class','note').data([note]);
+        for(let i=0;i<this.note_board.length;++i){
+            // j == 0: open string
+            if(this.active_notes.has(this.parsedTuning[i]))
+                d3.select('#openstring'+i).style('opacity',1);
 
-                // TODO: open string indicator
-                if(this.bools[i][j]&&name===this.parsedTuning[i].name)
-                    d3.select('#openstring'+i).style('opacity',1);
+            // j > 0: the rest of the notes
+            for(let j=1; j<this.note_board[i].length;++j){
+                const y = this.margin.top + i*ydel;
+                const x = this.margin.left + (j-0.5)*xdel;
+                const note = this.note_board[i][j];
+                const name = Tonal.Note.simplify(note.name);
+                const is_active = this.active_notes.has(note);
+                let color = color_notes;
+                if(is_active) color = this.active_notes.get(note);
+                const g = this.parent.append('g').attr('class','note').data([note]);
 
                 // the circle on the fretboard
                 g.append('circle')
-                    .attr('cx',x).attr('cy', y)
-                    .attr('r',radius_notes)
-                    .style('fill',note.color?note.color:color_notes);
+                .attr('cx',x).attr('cy', y)
+                .attr('r',radius_notes)
+                .style('fill',color);
+
                 // the text in the circle
                 g.append('text')
-                    .attr('x',x-radius_notes/4).attr('y',y+4)
-                    .style('fill',color_notes_name)
-                    .text(name);
+                .attr('x',x-radius_notes/4).attr('y',y+4)
+                .style('fill',color_notes_name)
+                .text(name);
+
                 // the tooltip on mouseover
                 g.on('mouseover',d=>{
                     this.tooltip_notes.text('note: '+d.name);
-                    //console.log(d);
                     return this.tooltip_notes.style('visibility','visible');
                 });
                 g.on('mousemove',d=>{
@@ -178,12 +193,18 @@ class BassNeck {
                 g.on('mouseout',d=>{
                     return this.tooltip_notes.style('visibility','hidden');
                 });
+
+                // click to toggle note on/off
                 g.on('click',()=>{
-                    this.bools[i][j]=!this.bools[i][j];
-                    if(this.bools[i][j])this.notes[i][j].color=color_notes;
+                    if(is_active){
+                        this.active_notes.delete(note);
+                    } else {
+                        this.active_notes.set(note,color_notes)
+                    }
                     this.draw();
                 });
-                if(this.bools[i][j]){
+                // use opacity instead of hidden so that the notes can still use above mouse listeners
+                if(is_active){
                     g.style('opacity',1);
                 } else {
                     g.style('opacity',0);
@@ -217,18 +238,8 @@ class BassNeck {
 
     // @param note: Tonal.Note
     // @param color: string
-    enableNote(note, color){
-        const arg_name = note.name;
-        console.log('trying to find '+arg_name);
-        for(let i=0; i<this.notes.length; ++i){
-            for(let j=0; j<this.notes[i].length; ++j){
-                if(arg_name === this.notes[i][j].name){
-                    this.bools[i][j] = true;
-                    if(color)
-                        this.notes[i][j].color=color;
-                }
-            }
-        }
+    enableNote(note, color=color_notes){
+        this.active_notes.set(note,color);
     }
 
     // @param chord: Tonal.Chord
@@ -246,42 +257,14 @@ class BassNeck {
 
     // @param tuning: string[]
     setTuning(tuning){
-        // save currently activated notes and their color
-        let prev_notes = [];
-        for(let i=0;i<this.bools.length;++i)
-            for(let j=0;j<this.bools[i].length;++j)
-                if(this.bools[i][j])
-                    prev_notes.push(this.notes[i][j]);
-        this.clearBools(); // de-activate all notes
-
-        // build tuning and this.notes from arg
         this.tuning = tuning;
-        this.notes = []; // clears old this.notes
         this.parsedTuning = tuning.map(Tonal.Note.get);
-        for(let i=0; i<num_strings; ++i){
-            const open_string = this.parsedTuning[i];
-            const open_string_name = Tonal.Note.simplify(open_string.name);
-            const chrom_scale = Tonal.Scale.get(open_string_name+' chromatic');
-            let note_arr = [];
-            for(let j=0; j<num_frets; ++j){
-                note_arr.push(Tonal.Note.get(chrom_scale.notes[(j+1)%num_frets]));
-            }
-            this.notes.push(note_arr);
-        }
-
-        // re-activate previous notes
-        prev_notes.map(d=>this.enableNote(d,d.color), this);
-
+        this.populate_note_board(this.parsedTuning);
     }
 
-    clearBools(){
-        for(let i=0;i<this.bools.length; ++i){
-            for(let j=0; j<this.bools[i].length; ++j){
-                this.bools[i][j] = false;
-            }
-        }
+    clear(){
+        this.active_notes.clear();
     }
-
 }
 
 // driver
@@ -296,15 +279,14 @@ bass.draw();
 
 // functions for testing
 function testScale() {
-    bass.clearBools();
     const scale = Tonal.Scale.get('c2 pentatonic');
     console.log('Enabling all notes in a '+scale.name+' scale');
+    console.log(scale);
     bass.enableScale(scale,'red');
     bass.draw();
 }
 
 function testChord() {
-    bass.clearBools();
     const chord = Tonal.Chord.get('cmaj7');
     console.log('Enabling all notes in a'+chord.symbol+' chord at octave 2');
     console.log(chord);
@@ -313,9 +295,9 @@ function testChord() {
 }
 
 function testNote(){
-    bass.clearBools();
     const note = Tonal.Note.get('C3');
     console.log('Enabling all notes that are '+note.name+' notes');
+    console.log(note);
     bass.enableNote(note,'green');
     bass.draw();
 }
@@ -331,7 +313,8 @@ function testTuning(){
 }
 
 function testClear(){
-    bass.clearBools();
+    console.log('Clearing all active notes');
+    bass.clear();
     bass.draw();
 }
 
