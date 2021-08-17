@@ -9,6 +9,7 @@ const width_string = 3;
 const color_string = 'black';
 const width_fret = 8;
 const color_fret = 'silver';
+const color_fret_outline = 'black'
 
 const tuning = ['G2', 'D2', 'A1', 'E1'];
 
@@ -40,10 +41,16 @@ const dots = [
 ];
 const radius_dots = 8;
 const color_dots = 'grey';
+const color_dots_outline = 'black';
 
 const radius_notes = 24;
 const color_notes = 'darkgreen';
 const color_notes_name = 'white';
+
+const color_background = 'lightyellow';
+
+const color_tooltip_background = 'black';
+const color_tooltip_text = 'white';
 // end defaults
 
 class fretboard {
@@ -76,8 +83,8 @@ class fretboard {
             .style('position','absolute')
             .style('z-index','10')
             .style('visibility','hidden')
-            .style('background','#000')
-            .style('color','#FFF')
+            .style('background',color_tooltip_background)
+            .style('color',color_tooltip_text)
             .text('note: <>');
     }
 
@@ -104,12 +111,12 @@ class fretboard {
 
     drawFrets(xmin,xmax,xdel,ymin,ymax,ydel){
         for(let i=xmin,j=0; i<=xmax; i+=xdel,++j){
-            // outside of fret
+            // outline of fret
             this.parent.append('line')
                 .attr('x1',i).attr('x2',i)
                 .attr('y1', ymin - 12)
                 .attr('y2', ymax + 12)
-                .style('stroke','black')
+                .style('stroke',color_fret_outline)
                 .style('stroke-width', width_fret+3);
 
             // inside of fret
@@ -135,7 +142,7 @@ class fretboard {
             .attr('x2', xmin)
             .attr('y1', ymin - 10)
             .attr('y2', ymax + 10)
-            .style('stroke', 'black')
+            .style('stroke', color_fret_outline)
             .style('stroke-width', width_fret);
     }
 
@@ -175,7 +182,7 @@ class fretboard {
                 .attr('cx', x).attr('cy', y)
                 .attr('r',radius_dots)
                 .style('fill',color_dots)
-                .style('stroke', 'black');
+                .style('stroke', color_dots_outline);
         }
     }
 
@@ -185,8 +192,7 @@ class fretboard {
             .attr('width', xmax-xmin)
             .attr('y', ymin)
             .attr('height', ymax-ymin)
-            .attr('stroke', 'black')
-            .attr('fill', 'lightyellow');
+            .attr('fill', color_background);
     }
 
     drawNotes(xmin,xmax,xdel,ymin,ymax,ydel){
@@ -210,7 +216,7 @@ class fretboard {
                 g.append('circle')
                     .attr('cx',x).attr('cy', y)
                     .attr('r',radius_notes)
-                    .style('stroke','black')
+                    .style('stroke',color_notes_outline)
                     .style('fill',color);
 
                 // the text in the circle
