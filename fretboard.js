@@ -101,10 +101,23 @@ class fretboard {
         for(let i=0; i<this.num_strings; ++i){
             const open_string = tuning[i];
             const open_string_name = Tonal.Note.simplify(open_string);
-            const chrom_scale = Tonal.Scale.get(open_string_name+' chromatic');
+            let chrom_scale = Tonal.Scale.get(open_string_name+' chromatic');
             let note_arr = [];
+            let octave_count = 0;
             for(let j=0; j<=this.num_frets; ++j){
-                note_arr.push(Tonal.Note.get(chrom_scale.notes[j%12])); // loop thru 12 notes in chromatic scale
+                // we need more than one octave of notes if this.num_frets >= 12
+                // therefore, replace the chrom_scale with higher octaves when necessary
+                if(j !== 0 && j % 12 === 0){
+                    let octave = open_string_name.replace(/\D/g,''); // strip all non-numbers
+                    octave = parseInt(octave) + 1; // convert to string, add one to get next octave up
+                    const base_note = open_string_name.replace(/[0-9]/g, ''); // strip all numbers
+                    const next_note = base_note + octave; // string concatenation
+                    chrom_scale = Tonal.Scale.get(next_note+' chromatic'); // replace chromatic scale with new one (one octave higher) 
+                    ++octave_count; // keep track of how high up we're going
+                    // console.log('needed another octave to fill string; starting again from '+next_note);
+                }
+                // j-12*octave_count is always bounded by 0 and 11 inclusive
+                note_arr.push(Tonal.Note.get(chrom_scale.notes[j-12*octave_count])); 
             }
             this.note_board.push(note_arr);
         }
