@@ -46,6 +46,7 @@ const color_dots_outline = 'black';
 const radius_notes = 24;
 const color_notes = 'darkgreen';
 const color_notes_name = 'white';
+const color_notes_outline = 'black';
 
 const color_background = 'lightyellow';
 
