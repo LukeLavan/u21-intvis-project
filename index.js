@@ -8,28 +8,49 @@ let bass = new fretboard(svg);
 // initial draw of empty fretboard
 bass.draw();
 
+const scaleTypes = ['Select scale type', 'Major', 'Minor', 'Major Pentatonic', 'Minor Pentatonic', 'Chromatic']; 
+const arpeggioTypes = ['Select arpeggio type', 'Major', 'Minor', 'Major Seventh', 'Minor Seventh', 'Dominant Seventh', 'Augmented', 'Diminished']
 // functions for testing
-function testScale() {
-    const scale = Tonal.Scale.get('c2 pentatonic');
+function showScale() {
+    if (bass.selected_note == null){
+	alert('Please select a note on the fretboard');
+	return;
+    }
+    bass.clear();
+    scale_type = d3.select('#select_scale_type').property('value');
+    if (scale_type == 'Select scale type') return;
+    scale_name = bass.selected_note.name + ' ' + scale_type; 
+    scale_name = scale_name.toLowerCase();
+    const scale = Tonal.Scale.get(scale_name);
+    const range = Tonal.Scale.rangeOf(scale_name);
+    // modified note list to include the octave
+    start_note = bass.selected_note.letter + 0;
+    end_note = bass.selected_note.letter + 8; // (bass.selected_note.oct + 1);
+    scale.notes = range(start_note, end_note);
     console.log('Enabling all notes in a '+scale.name+' scale');
     console.log(scale);
-    bass.enableScale(scale,'red');
+    if (scale_type.includes('Major')) bass.enableScale(scale,'red');
+    else if (scale_type.includes('Minor')) bass.enableScale(scale, 'blue');
+    else bass.enableScale(scale, 'green');
     bass.draw();
 }
 
-function testChord() {
-    const chord = Tonal.Chord.get('cmaj7');
-    console.log('Enabling all notes in a'+chord.symbol+' chord at octave 2');
+function showArpeggio() {
+    if (bass.selected_note == null){
+	alert('Please select a note on the fretboard');
+	return;
+    }
+    bass.clear();
+    arpeggio_type = d3.select('#select_arpeggio_type').property('value');
+    if (arpeggio_type == 'Select arpeggio type') return;
+    arpeggio_name = bass.selected_note.name + ' ' + arpeggio_type;
+    arpeggio_name = arpeggio_name.toLowerCase();
+    const chord = Tonal.Chord.get(arpeggio_name);
+    console.log('Enabling all notes in a '+chord.symbol+' chord at octave 2');
     console.log(chord);
-    bass.enableChord(chord,2,'blue');
-    bass.draw();
-}
-
-function testNote(){
-    const note = Tonal.Note.get('C3');
-    console.log('Enabling all notes that are '+note.name+' notes');
-    console.log(note);
-    bass.enableNote(note,'green');
+    if (arpeggio_type.includes('Major')) bass.enableChord(chord, 'red');
+    else if (arpeggio_type.includes('Minor')) bass.enableChord(chord, 'blue');
+    else bass.enableChord(chord, 'green');
     bass.draw();
 }
 
@@ -43,9 +64,10 @@ function testTuning(){
     bass.draw();
 }
 
-function testClear(){
+function clear(){
     console.log('Clearing all active notes');
     bass.clear();
+    bass.selected_note = null;
     bass.draw();
 }
 
@@ -59,32 +81,40 @@ function testFretNum(){
 }
 
 // buttons that call above testing functions
-const buttons = d3.select('#buttons');
+buttons = d3.select('#scale_buttons');
 
-const testScaleButton = buttons.append('button')
-    .text('Scale')
-    .on('click',testScale);
+const scaleTypeList = buttons.append('select')
+    .attr('id','select_scale_type')
 
-const testChordButton = buttons.append('button')
-    .text('Chord')
-    .on('click',testChord);
+scaleTypeList.selectAll('option')
+    .data(scaleTypes).enter()
+//    .data(Tonal.Scale.names()).enter()
+    .append('option')
+	.text(d=>d);
 
-const testNoteButton = buttons.append('button')
-    .text('Note')
-    .on('click',testNote);
+const scaleButton = buttons.append('button')
+    .text('Show Scale')
+    .on('click',showScale);
+
+buttons = d3.select('#arpeggio_buttons');
+
+const arpeggioTypeList = buttons.append('select')
+    .attr('id','select_arpeggio_type')
+
+arpeggioTypeList.selectAll('option')
+    .data(arpeggioTypes).enter()
+    .append('option')
+	.text(d=>d);
+
+const arpeggioButton = buttons.append('button')
+    .text('Show Arpeggio')
+    .on('click',showArpeggio);
+
+buttons = d3.select('#misc_buttons');
 
 const testTuningButton = buttons.append('select')
     .attr('id','select_tuning')
     .on('change',testTuning);
-
-testTuningButton.selectAll('option')
-    .data(testTuningsNames).enter()
-    .append('option')
-        .text(d=>d);
-
-const testClearButton = buttons.append('button')
-    .text('Clear')
-    .on('click',testClear);
 
 const testFretNumButton = buttons.append('select')
     .attr('id','select_fretnum')
@@ -92,3 +122,16 @@ const testFretNumButton = buttons.append('select')
 testFretNumButton.selectAll('option')
     .data(testFretNumOptions).enter()
     .append('option').text(d=>d);
+
+testTuningButton.selectAll('option')
+    .data(testTuningsNames).enter()
+    .append('option')
+        .text(d=>d);
+
+buttons = d3.select('#clear_button');
+
+const clearButton = buttons.append('button')
+    .text('Clear')
+    .on('click',clear);
+
+

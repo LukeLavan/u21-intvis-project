@@ -87,6 +87,10 @@ class fretboard {
             .style('background',color_tooltip_background)
             .style('color',color_tooltip_text)
             .text('note: <>');
+
+	// store user selected note, default value null is checked to determine if notes can be selected (one note at a time)
+	// resets to null when active notes are reset using the clear button
+	this.selected_note = null;
     }
 
     populate_note_board(tuning=tuning){
@@ -258,13 +262,17 @@ class fretboard {
 
                 // click to toggle note on/off
                 g.on('click',()=>{
-                    if(is_active){
-                        this.active_notes.delete(note);
-                    } else {
-                        this.active_notes.set(note,color_notes);
-                        // also immediately hide the mouseover tooltip
-                        this.tooltip_notes.style('visibility','hidden');
-                    }
+		    if(this.selected_note == null){
+			if(is_active){
+			    this.active_notes.delete(note);
+			} else {
+			    this.active_notes.set(note,color_notes);
+			    // also immediately hide the mouseover tooltip
+			    this.tooltip_notes.style('visibility','hidden');
+			    // store the selected note
+			    this.selected_note = note;
+			}
+		    }
                     this.draw();
                 });
                 // use opacity instead of hidden so that the notes can still use above mouse listeners
@@ -307,19 +315,24 @@ class fretboard {
     // @param color: string
     enableNote(note, color=color_notes){
         this.active_notes.set(note,color);
+	const enharmonic_name = Tonal.Note.enharmonic(note.name);
+	if (enharmonic_name != ''){
+	    const enharmonic = Tonal.Note.get(enharmonic_name);
+	    this.active_notes.set(enharmonic,color);
+	}
     }
 
     // @param chord: Tonal.Chord
     // @param octave: number
     // @param color: string
-    enableChord(chord, octave, color){
-        chord.notes.map(d=>this.enableNote(Tonal.Note.get(''+d+octave),color));
+    enableChord(chord, color){
+        chord.notes.map(d=>this.enableNote(Tonal.Note.get(d),color));
     }
 
     // @param scale: Tonal.Scale
     // @param color: string
     enableScale(scale, color){
-        this.enableChord(scale,'',color); // same logic, different name
+        this.enableChord(scale,color); // same logic, different name
     }
 
     // @param tuning: string[]

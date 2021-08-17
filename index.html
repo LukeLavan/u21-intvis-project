@@ -10,11 +10,18 @@
 
 <body>
 
-<h1>Interactive Fretboard</h1>
+<h1>Interactive Bass Fretboard</h1>
 <h2>Interactive Visualization Final Project (Summer 2021)</h2>
-<p>Click a position to activate a note!</p>
+<p>Click a position to activate a note, choose scale or arpeggio type, then display them using the correpsonding buttons!<br>
+Once a note has been selected, you must reset the fretboard with the Clear button before selecting a new note.</p>
 <svg id="fretboard" width=1024 height=300></svg>
-<div id="buttons"></div>
+<div id="scale_buttons"></div>
+<br>
+<div id="arpeggio_buttons"></div>
+<br>
+<div id="misc_buttons"></div>
+<br>
+<div id="clear_button"></div>
 <script src="fretboard.js"></script>
 <script src="index.js"></script>
 
