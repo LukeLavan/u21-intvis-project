@@ -5,10 +5,10 @@ let num_frets = 12;
 const svg_width = 1024;
 const svg_height = Math.max(svg_width / num_strings, 300);
 
-const width_string = 8;
+const width_string = 3;
 const color_string = 'black';
 const width_fret = 8;
-const color_fret = 'black';
+const color_fret = 'silver';
 
 const tuning = ['G2', 'D2', 'A1', 'E1'];
 
@@ -103,14 +103,40 @@ class fretboard {
     }
 
     drawFrets(xmin,xmax,xdel,ymin,ymax,ydel){
-        for(let i=xmin; i<=xmax; i+=xdel){
+        for(let i=xmin,j=0; i<=xmax; i+=xdel,++j){
+            // outside of fret
             this.parent.append('line')
                 .attr('x1',i).attr('x2',i)
-                .attr('y1',ymin)
-                .attr('y2',ymax)
+                .attr('y1', ymin - 12)
+                .attr('y2', ymax + 12)
+                .style('stroke','black')
+                .style('stroke-width', width_fret+3);
+
+            // inside of fret
+            this.parent.append('line')
+                .attr('x1',i).attr('x2',i)
+                .attr('y1',ymin-10)
+                .attr('y2',ymax+10)
                 .style('stroke', color_fret)
                 .style('stroke-width', width_fret);
+            
+            // fret labels
+            if(j!==0){
+                this.parent.append('text')
+                    .attr('x', i-5)
+                    .attr('y', ymax + 28)
+                    .text(j);
+            }
         }
+
+        // baseline
+        this.parent.append('line')
+            .attr('x1', xmin)
+            .attr('x2', xmin)
+            .attr('y1', ymin - 10)
+            .attr('y2', ymax + 10)
+            .style('stroke', 'black')
+            .style('stroke-width', width_fret);
     }
 
     drawStrings(xmin,xmax,xdel,ymin,ymax,ydel){
@@ -135,7 +161,7 @@ class fretboard {
             this.parent.append('line')
                 .attr('y1',i).attr('y2',i)
                 .attr('x1',xmin)
-                .attr('x2',xmax)
+                .attr('x2',xmax+10)
                 .style('stroke', color_string)
                 .style('stroke-width',width_string);
         }
@@ -148,8 +174,19 @@ class fretboard {
             this.parent.append('circle')
                 .attr('cx', x).attr('cy', y)
                 .attr('r',radius_dots)
-                .style('fill',color_dots);
+                .style('fill',color_dots)
+                .style('stroke', 'black');
         }
+    }
+
+    drawBackground(xmin, xmax, ymin, ymax){
+        this.parent.append('rect')
+            .attr('x',xmin)
+            .attr('width', xmax-xmin)
+            .attr('y', ymin)
+            .attr('height', ymax-ymin)
+            .attr('stroke', 'black')
+            .attr('fill', 'lightyellow');
     }
 
     drawNotes(xmin,xmax,xdel,ymin,ymax,ydel){
@@ -171,19 +208,21 @@ class fretboard {
 
                 // the circle on the fretboard
                 g.append('circle')
-                .attr('cx',x).attr('cy', y)
-                .attr('r',radius_notes)
-                .style('fill',color);
+                    .attr('cx',x).attr('cy', y)
+                    .attr('r',radius_notes)
+                    .style('stroke','black')
+                    .style('fill',color);
 
                 // the text in the circle
                 g.append('text')
-                .attr('x',x-radius_notes/4).attr('y',y+4)
-                .style('fill',color_notes_name)
-                .text(name);
+                    .attr('x',x).attr('y',y+3)
+                    .attr('text-anchor', 'middle')
+                    .style('fill',color_notes_name)
+                    .text(name);
 
                 // the tooltip on mouseover
                 g.on('mouseover',d=>{
-                    this.tooltip_notes.text('note: '+d.name);
+                    this.tooltip_notes.text(d.name);
                     return this.tooltip_notes.style('visibility','visible');
                 });
                 g.on('mousemove',d=>{
@@ -222,6 +261,9 @@ class fretboard {
         const xmin = this.margin.left;
         const xmax = this.width - this.margin.right;
         const xdel = (xmax - xmin)/this.num_frets;
+
+        // draw background
+        this.drawBackground(xmin, xmax, ymin, ymax);
 
         // draw frets
         this.drawFrets(xmin,xmax,xdel,ymin,ymax,ydel);
