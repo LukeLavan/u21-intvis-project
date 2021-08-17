@@ -8,7 +8,7 @@ let bass = new fretboard(svg);
 // initial draw of empty fretboard
 bass.draw();
 
-const scaleTypes = ['Select scale type', 'Major', 'Minor', 'Major Pentatonic', 'Minor Pentatonic', 'Chromatic']; 
+const scaleTypes = ['Select scale type', 'Major', 'Minor', 'Major Pentatonic', 'Minor Pentatonic', 'Minor Blues', 'Major Blues']
 const arpeggioTypes = ['Select arpeggio type', 'Major', 'Minor', 'Major Seventh', 'Minor Seventh', 'Dominant Seventh', 'Augmented', 'Diminished']
 // functions for testing
 function showScale() {
@@ -29,8 +29,8 @@ function showScale() {
     scale.notes = range(start_note, end_note);
     console.log('Enabling all notes in a '+scale.name+' scale');
     console.log(scale);
-    if (scale_type.includes('Major')) bass.enableScale(scale,'red');
-    else if (scale_type.includes('Minor')) bass.enableScale(scale, 'blue');
+    if (scale_type.includes('Major')) bass.enableScale(scale,'orange');
+    else if (scale_type.includes('Minor')) bass.enableScale(scale, 'lightblue');
     else bass.enableScale(scale, 'green');
     bass.draw();
 }
@@ -48,8 +48,8 @@ function showArpeggio() {
     const chord = Tonal.Chord.get(arpeggio_name);
     console.log('Enabling all notes in a '+chord.symbol+' chord at octave 2');
     console.log(chord);
-    if (arpeggio_type.includes('Major')) bass.enableChord(chord, 'red');
-    else if (arpeggio_type.includes('Minor')) bass.enableChord(chord, 'blue');
+    if (arpeggio_type.includes('Major')) bass.enableChord(chord, 'orange');
+    else if (arpeggio_type.includes('Minor')) bass.enableChord(chord, 'lightblue');
     else bass.enableChord(chord, 'green');
     bass.draw();
 }

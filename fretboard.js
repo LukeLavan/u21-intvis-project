@@ -44,7 +44,7 @@ const color_dots = 'grey';
 const color_dots_outline = 'black';
 
 const radius_notes = 24;
-const color_notes = 'darkgreen';
+const color_notes = 'brown';
 const color_notes_name = 'white';
 const color_notes_outline = 'black';
 
@@ -229,6 +229,7 @@ class fretboard {
                 const is_active = this.active_notes.has(note);
                 let color = color_notes;
                 if(is_active) color = this.active_notes.get(note);
+		if (note == this.selected_note) color = color_notes;
                 const g = this.parent.append('g').attr('class','note').data([note]);
 
                 // the circle on the fretboard
