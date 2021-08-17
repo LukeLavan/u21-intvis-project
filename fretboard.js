@@ -220,25 +220,29 @@ class fretboard {
                     .style('fill',color_notes_name)
                     .text(name);
 
-                // the tooltip on mouseover
-                g.on('mouseover',d=>{
-                    this.tooltip_notes.text(d.name);
-                    return this.tooltip_notes.style('visibility','visible');
-                });
-                g.on('mousemove',d=>{
-                    return this.tooltip_notes.style('top',d3.event.pageY-10+'px')
-                        .style('left',d3.event.pageX+10+'px');
-                });
-                g.on('mouseout',d=>{
-                    return this.tooltip_notes.style('visibility','hidden');
-                });
+                // mouseover tooltip only shows for inactive notes
+                if(!is_active){
+                    g.on('mouseover',d=>{
+                        this.tooltip_notes.text(d.name);
+                        return this.tooltip_notes.style('visibility','visible');
+                    });
+                    g.on('mousemove',d=>{
+                        return this.tooltip_notes.style('top',d3.event.pageY-10+'px')
+                            .style('left',d3.event.pageX+10+'px');
+                    });
+                    g.on('mouseout',d=>{
+                        return this.tooltip_notes.style('visibility','hidden');
+                    });
+                }
 
                 // click to toggle note on/off
                 g.on('click',()=>{
                     if(is_active){
                         this.active_notes.delete(note);
                     } else {
-                        this.active_notes.set(note,color_notes)
+                        this.active_notes.set(note,color_notes);
+                        // also immediately hide the mouseover tooltip
+                        this.tooltip_notes.style('visibility','hidden');
                     }
                     this.draw();
                 });
