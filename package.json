@@ -1,0 +1,23 @@
+{
+  "name": "u21-intvis-project",
+  "version": "1.0.0",
+  "description": "Arch 2021 Interactive Visualization Final Project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LukeLavan/u21-intvis-project.git"
+  },
+  "private": true,
+  "bugs": {
+    "url": "https://github.com/LukeLavan/u21-intvis-project/issues"
+  },
+  "homepage": "https://github.com/LukeLavan/u21-intvis-project#readme",
+  "devDependencies": {
+    "gulp": "^4.0.2",
+    "gulp-sass": "^5.0.0",
+    "node-sass": "^6.0.1"
+  }
+}
