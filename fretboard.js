@@ -166,16 +166,17 @@ class fretboard {
             this.parent.append('circle')
                 .attr('id','openstring'+j)
                 .attr('cy',i-radius_notes/2+8)
-                .attr('cx',8)
-                .attr('r',radius_notes)
-                .attr('stroke',color_notes)
+                .attr('cx',11)
+                .attr('r',radius_notes/2)
+                .attr('stroke',color_string)
                 .attr('fill','none')
                 .style('opacity',0);
 
             // the string label
             this.parent.append('text')
                 .attr('y',i)
-                .attr('x',0)
+                .attr('x',2)
+                .attr('font-size','15px')
                 .text(this.tuning[j]);
             
             // the string itself
@@ -211,7 +212,7 @@ class fretboard {
 
     drawNotes(xmin,xmax,xdel,ymin,ymax,ydel){
         for(let i=0;i<this.note_board.length;++i){
-            // j == 0: open string
+            // j === 0: open string
             if(this.active_notes.has(this.parsedTuning[i]))
                 d3.select('#openstring'+i).style('opacity',1);
 
